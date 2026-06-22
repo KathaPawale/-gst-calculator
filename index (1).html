@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>GST Calculator — Free Online Tool</title>
+<meta name="description" content="Free GST calculator for India. Calculate GST inclusive or exclusive, generate invoice breakdowns instantly." />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #f7f6f2;
+    --surface: #ffffff;
+    --border: #e4e2db;
+    --text: #1a1a18;
+    --muted: #6b6963;
+    --accent: #1b4f3a;
+    --accent-light: #e8f2ed;
+    --accent-mid: #2d7a57;
+    --danger: #c0392b;
+    --radius: 10px;
+    --font: 'Inter', system-ui, sans-serif;
+  }
+  body { font-family: var(--font); background: var(--bg); color: var(--text); min-height: 100vh; }
+  header { background: var(--accent); color: #fff; padding: 2rem 1.5rem 1.5rem; text-align: center; }
+  header .tag { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: #a8d5be; margin-bottom: 0.5rem; }
+  header h1 { font-size: clamp(1.6rem, 4vw, 2.4rem); font-weight: 700; letter-spacing: -0.02em; line-height: 1.15; margin-bottom: 0.4rem; }
+  header p { font-size: 0.95rem; color: #c8e6d8; max-width: 420px; margin: 0 auto; }
+  .tabs { display: flex; background: var(--accent); padding: 0 1.5rem; gap: 4px; border-bottom: 2px solid rgba(255,255,255,0.15); }
+  .tabs button { background: none; border: none; color: #a8d5be; font-size: 0.875rem; font-weight: 500; padding: 0.7rem 1.1rem; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; transition: color 0.15s; font-family: var(--font); }
+  .tabs button.active { color: #fff; border-bottom-color: #fff; }
+  .tabs button:hover:not(.active) { color: #e0f0e8; }
+  main { max-width: 760px; margin: 0 auto; padding: 1.5rem 1rem 4rem; }
+  .panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem; margin-bottom: 1rem; }
+  .panel-title { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 1rem; font-weight: 600; }
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 0.75rem; }
+  .field-row.three { grid-template-columns: 1fr 1fr 1fr; }
+  .field-row.full { grid-template-columns: 1fr; }
+  @media (max-width: 500px) { .field-row, .field-row.three { grid-template-columns: 1fr; } }
+  .field label { display: block; font-size: 0.8rem; color: var(--muted); font-weight: 500; margin-bottom: 0.3rem; }
+  .field input, .field select { width: 100%; padding: 0.6rem 0.75rem; border: 1px solid var(--border); border-radius: 6px; font-size: 0.95rem; font-family: var(--font); color: var(--text); background: var(--bg); transition: border-color 0.15s; -webkit-appearance: none; appearance: none; }
+  .field input:focus, .field select:focus { outline: none; border-color: var(--accent-mid); background: #fff; }
+  .items-header { display: grid; grid-template-columns: 2fr 70px 100px 80px 80px 36px; gap: 6px; font-size: 0.72rem; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; padding: 0 0 0.4rem; border-bottom: 1px solid var(--border); margin-bottom: 0.5rem; }
+  .item-row { display: grid; grid-template-columns: 2fr 70px 100px 80px 80px 36px; gap: 6px; margin-bottom: 6px; align-items: center; }
+  .item-row input, .item-row select { width: 100%; padding: 0.45rem 0.5rem; border: 1px solid var(--border); border-radius: 5px; font-size: 0.875rem; font-family: var(--font); color: var(--text); background: var(--bg); -webkit-appearance: none; appearance: none; }
+  .item-row input:focus, .item-row select:focus { outline: none; border-color: var(--accent-mid); background: #fff; }
+  .item-total { font-size: 0.875rem; font-weight: 600; color: var(--text); text-align: right; }
+  .del-btn { background: none; border: 1px solid var(--border); border-radius: 5px; color: var(--muted); cursor: pointer; width: 30px; height: 30px; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; transition: border-color 0.15s, color 0.15s; font-family: var(--font); }
+  .del-btn:hover { border-color: var(--danger); color: var(--danger); }
+  @media (max-width: 600px) { .items-header { display: none; } .item-row { grid-template-columns: 1fr 1fr 1fr; } .item-row input:first-child { grid-column: 1/-1; } }
+  .btn-add { background: none; border: 1px dashed var(--border); border-radius: 6px; color: var(--accent-mid); font-size: 0.875rem; font-family: var(--font); padding: 0.5rem 1rem; cursor: pointer; width: 100%; margin-top: 0.5rem; transition: background 0.15s, border-color 0.15s; }
+  .btn-add:hover { background: var(--accent-light); border-color: var(--accent-mid); }
+  .btn-primary { background: var(--accent); color: #fff; border: none; border-radius: 7px; font-size: 0.95rem; font-weight: 600; font-family: var(--font); padding: 0.75rem 1.5rem; cursor: pointer; transition: background 0.15s; }
+  .btn-primary:hover { background: #163d2e; }
+  .btn-outline { background: none; color: var(--accent); border: 1px solid var(--accent); border-radius: 7px; font-size: 0.875rem; font-weight: 500; font-family: var(--font); padding: 0.65rem 1.1rem; cursor: pointer; transition: background 0.15s; }
+  .btn-outline:hover { background: var(--accent-light); }
+  .actions { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 1rem; align-items: center; }
+  .summary { background: var(--accent-light); border: 1px solid #c2ddd0; border-radius: var(--radius); padding: 1.25rem 1.5rem; margin-top: 1rem; }
+  .summary-row { display: flex; justify-content: space-between; font-size: 0.9rem; padding: 0.25rem 0; color: var(--muted); }
+  .summary-row.total { font-size: 1.15rem; font-weight: 700; color: var(--accent); border-top: 1.5px solid #b0d3c0; margin-top: 0.5rem; padding-top: 0.6rem; }
+  .summary-row.gst { color: var(--accent-mid); font-weight: 500; }
+  .result-card { background: var(--accent-light); border: 1px solid #c2ddd0; border-radius: var(--radius); padding: 1.25rem; margin-top: 1rem; }
+  .result-card .rc-label { font-size: 0.78rem; color: var(--muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.07em; }
+  .result-card .rc-value { font-size: 1.8rem; font-weight: 700; color: var(--accent); margin: 0.2rem 0 0.8rem; }
+  .result-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px,1fr)); gap: 0.5rem; }
+  .rg-cell { background: #fff; border-radius: 6px; padding: 0.6rem 0.75rem; }
+  .rg-cell .rg-label { font-size: 0.75rem; color: var(--muted); }
+  .rg-cell .rg-val { font-size: 1rem; font-weight: 600; color: var(--text); }
+  #invoice-preview-wrap { background: #fff; border: 1px solid var(--border); border-radius: var(--radius); padding: 2rem; font-size: 0.9rem; line-height: 1.6; margin-top: 1.5rem; }
+  .inv-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem; }
+  .inv-biz-name { font-size: 1.3rem; font-weight: 700; color: var(--accent); }
+  .inv-meta { text-align: right; font-size: 0.82rem; color: var(--muted); }
+  .inv-meta strong { display: block; font-size: 1rem; color: var(--text); }
+  .inv-parties { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem; }
+  .inv-party-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 0.25rem; }
+  .inv-table { width: 100%; border-collapse: collapse; margin-bottom: 1rem; }
+  .inv-table th { background: var(--bg); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); padding: 0.5rem 0.75rem; text-align: left; border-bottom: 1px solid var(--border); }
+  .inv-table td { padding: 0.6rem 0.75rem; border-bottom: 1px solid var(--border); font-size: 0.875rem; }
+  .inv-table tr:last-child td { border-bottom: none; }
+  .inv-totals { margin-left: auto; width: 260px; }
+  .inv-tot-row { display: flex; justify-content: space-between; font-size: 0.875rem; padding: 0.2rem 0; color: var(--muted); }
+  .inv-tot-row.final { font-weight: 700; font-size: 1rem; color: var(--text); border-top: 1.5px solid var(--border); margin-top: 0.4rem; padding-top: 0.4rem; }
+  .inv-footer { margin-top: 2rem; padding-top: 1rem; border-top: 1px solid var(--border); font-size: 0.8rem; color: var(--muted); text-align: center; }
+  footer { background: var(--accent); color: #c8e6d8; text-align: center; padding: 1.5rem 1rem; font-size: 0.82rem; }
+  footer a { color: #fff; text-decoration: none; font-weight: 600; }
+  .dh-btn { display: inline-block; background: #fff; color: var(--accent); font-weight: 700; font-size: 0.85rem; border-radius: 6px; padding: 0.55rem 1.2rem; text-decoration: none; margin-bottom: 0.75rem; }
+  .hidden { display: none !important; }
+  .tab-section { display: none; }
+  .tab-section.active { display: block; }
+  @media print {
+    header, .tabs, .panel, .actions, .summary, footer, .btn-add, .btn-primary, .btn-outline { display: none !important; }
+    #tab-invoice { display: block !important; }
+    #invoice-preview-wrap { display: block !important; border: none; padding: 0; margin: 0; }
+    body { background: #fff; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="tag">Free Online Tool · India</div>
+  <h1>GST Calculator</h1>
+  <p>Calculate GST and build professional invoices — instantly, right in your browser.</p>
+</header>
+
+<div class="tabs">
+  <button class="active" onclick="switchTab('quick',this)">Quick GST</button>
+  <button onclick="switchTab('invoice',this)">Invoice Builder</button>
+</div>
+
+<main>
+
+  <!-- QUICK TAB -->
+  <div id="tab-quick" class="tab-section active">
+    <div class="panel">
+      <div class="panel-title">Calculate GST</div>
+      <div class="field-row">
+        <div class="field">
+          <label>Amount (₹)</label>
+          <input type="number" id="q-amount" placeholder="10000" min="0" oninput="calcQuick()" />
+        </div>
+        <div class="field">
+          <label>GST Rate</label>
+          <select id="q-rate" onchange="rateChange()">
+            <option value="5">5%</option>
+            <option value="12" selected>12%</option>
+            <option value="18">18%</option>
+            <option value="28">28%</option>
+            <option value="0">0% (Exempt)</option>
+            <option value="custom">Custom %</option>
+          </select>
+        </div>
+      </div>
+      <div class="field-row hidden" id="custom-row">
+        <div class="field">
+          <label>Custom Rate (%)</label>
+          <input type="number" id="q-custom" placeholder="e.g. 3" min="0" max="100" oninput="calcQuick()" />
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Amount type</label>
+          <select id="q-type" onchange="calcQuick()">
+            <option value="excl">Exclusive — add GST on top</option>
+            <option value="incl">Inclusive — extract GST from it</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Transaction</label>
+          <select id="q-txn" onchange="calcQuick()">
+            <option value="intra">Intra-state (CGST + SGST)</option>
+            <option value="inter">Inter-state (IGST)</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="result-card hidden" id="q-result">
+      <div class="rc-label">Total amount payable</div>
+      <div class="rc-value" id="q-total">—</div>
+      <div class="result-grid" id="q-grid"></div>
+    </div>
+  </div>
+
+  <!-- INVOICE TAB -->
+  <div id="tab-invoice" class="tab-section">
+    <div class="panel">
+      <div class="panel-title">Your business</div>
+      <div class="field-row">
+        <div class="field"><label>Business name</label><input type="text" id="biz-name" placeholder="Acme Pvt Ltd" /></div>
+        <div class="field"><label>GSTIN</label><input type="text" id="biz-gstin" placeholder="27AADCB2230M1Z3" /></div>
+      </div>
+      <div class="field-row full">
+        <div class="field"><label>Address</label><input type="text" id="biz-addr" placeholder="123, MG Road, Mumbai, MH 400001" /></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">Client & invoice</div>
+      <div class="field-row">
+        <div class="field"><label>Client name</label><input type="text" id="cli-name" placeholder="Client Ltd" /></div>
+        <div class="field"><label>Client GSTIN (optional)</label><input type="text" id="cli-gstin" placeholder="Optional" /></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Invoice No.</label><input type="text" id="inv-no" placeholder="INV-001" /></div>
+        <div class="field"><label>Invoice Date</label><input type="date" id="inv-date" /></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">Line items</div>
+      <div class="items-header">
+        <span>Description</span><span>Qty</span><span>Rate (₹)</span><span>GST</span><span>Total</span><span></span>
+      </div>
+      <div id="items-container"></div>
+      <button class="btn-add" onclick="addItem()">+ Add item</button>
+    </div>
+
+    <div class="summary hidden" id="inv-summary">
+      <div class="summary-row"><span>Subtotal</span><span id="s-subtotal">—</span></div>
+      <div class="summary-row gst" id="s-cgst-row"><span>CGST</span><span id="s-cgst">—</span></div>
+      <div class="summary-row gst" id="s-sgst-row"><span>SGST</span><span id="s-sgst">—</span></div>
+      <div class="summary-row gst hidden" id="s-igst-row"><span>IGST</span><span id="s-igst">—</span></div>
+      <div class="summary-row total"><span>Total</span><span id="s-total">—</span></div>
+    </div>
+
+    <div class="actions">
+      <div class="field" style="margin:0">
+        <select id="inv-txn" onchange="updateSummary()" style="padding:0.65rem 0.75rem;border-radius:7px;border:1px solid var(--border);font-family:var(--font);font-size:0.875rem;background:var(--bg);color:var(--text);">
+          <option value="intra">Intra-state (CGST + SGST)</option>
+          <option value="inter">Inter-state (IGST)</option>
+        </select>
+      </div>
+      <button class="btn-primary" onclick="previewInvoice()">Preview Invoice</button>
+      <button class="btn-outline" onclick="printInvoice()">Print / PDF</button>
+    </div>
+
+    <div id="invoice-preview-wrap" class="hidden"></div>
+  </div>
+
+</main>
+
+<footer>
+  <div><a href="https://digitalheroesco.com" class="dh-btn" target="_blank" rel="noopener">Built for Digital Heroes</a></div>
+  <div>Made by <strong>Katha Pawale</strong> &nbsp;·&nbsp; <a href="mailto:kathapawale321@gmail.com">kathapawale321@gmail.com</a></div>
+  <div style="margin-top:0.4rem;font-size:0.78rem;color:#a8d5be">No sign-up. No cost. Runs entirely in your browser.</div>
+</footer>
+
+<script>
+function fmt(n){ return '₹'+n.toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+
+// QUICK GST
+function rateChange(){
+  const v=document.getElementById('q-rate').value;
+  document.getElementById('custom-row').classList.toggle('hidden',v!=='custom');
+  calcQuick();
+}
+function calcQuick(){
+  const rawAmt=parseFloat(document.getElementById('q-amount').value);
+  const resEl=document.getElementById('q-result');
+  if(!rawAmt||rawAmt<=0){resEl.classList.add('hidden');return;}
+  const rateEl=document.getElementById('q-rate');
+  let rate=rateEl.value==='custom'?(parseFloat(document.getElementById('q-custom').value)||0):parseFloat(rateEl.value);
+  const type=document.getElementById('q-type').value;
+  const txn=document.getElementById('q-txn').value;
+  let base,gstAmt;
+  if(type==='excl'){base=rawAmt;gstAmt=+(base*rate/100).toFixed(2);}
+  else{base=+(rawAmt/(1+rate/100)).toFixed(2);gstAmt=+(rawAmt-base).toFixed(2);}
+  const total=+(base+gstAmt).toFixed(2);
+  document.getElementById('q-total').textContent=fmt(total);
+  resEl.classList.remove('hidden');
+  let g=`<div class="rg-cell"><div class="rg-label">Base amount</div><div class="rg-val">${fmt(base)}</div></div>
+          <div class="rg-cell"><div class="rg-label">GST (${rate}%)</div><div class="rg-val">${fmt(gstAmt)}</div></div>`;
+  if(txn==='intra'){const h=+(gstAmt/2).toFixed(2);g+=`<div class="rg-cell"><div class="rg-label">CGST (${rate/2}%)</div><div class="rg-val">${fmt(h)}</div></div><div class="rg-cell"><div class="rg-label">SGST (${rate/2}%)</div><div class="rg-val">${fmt(h)}</div></div>`;}
+  else{g+=`<div class="rg-cell"><div class="rg-label">IGST (${rate}%)</div><div class="rg-val">${fmt(gstAmt)}</div></div>`;}
+  document.getElementById('q-grid').innerHTML=g;
+}
+
+// INVOICE
+let itemCount=0;
+function addItem(){
+  itemCount++;
+  const id=itemCount;
+  const row=document.createElement('div');
+  row.className='item-row';row.id='item-'+id;
+  row.innerHTML=`
+    <input type="text" placeholder="Description" oninput="updateSummary()"/>
+    <input type="number" value="1" min="1" oninput="updateSummary()"/>
+    <input type="number" placeholder="0.00" min="0" step="0.01" oninput="updateSummary()"/>
+    <select onchange="updateSummary()"><option value="5">5%</option><option value="12" selected>12%</option><option value="18">18%</option><option value="28">28%</option><option value="0">0%</option></select>
+    <div class="item-total" id="itot-${id}">₹0</div>
+    <button class="del-btn" onclick="removeItem(${id})">×</button>`;
+  document.getElementById('items-container').appendChild(row);
+  updateSummary();
+}
+function removeItem(id){const el=document.getElementById('item-'+id);if(el)el.remove();updateSummary();}
+function getItems(){
+  return Array.from(document.querySelectorAll('#items-container .item-row')).map(row=>{
+    const inp=row.querySelectorAll('input');
+    const sel=row.querySelector('select');
+    const qty=parseFloat(inp[1].value)||0;
+    const rate=parseFloat(inp[2].value)||0;
+    const gstR=parseFloat(sel.value)||0;
+    const base=+(qty*rate).toFixed(2);
+    const gstAmt=+(base*gstR/100).toFixed(2);
+    return{desc:inp[0].value,qty,rate,gstRate:gstR,base,gstAmt,total:base+gstAmt,id:row.id.replace('item-','')};
+  });
+}
+function updateSummary(){
+  const items=getItems();
+  const txn=document.getElementById('inv-txn').value;
+  let sub=0,gstTotal=0;
+  items.forEach(it=>{
+    const el=document.getElementById('itot-'+it.id);
+    if(el)el.textContent=fmt(it.total);
+    sub+=it.base;gstTotal+=it.gstAmt;
+  });
+  sub=+sub.toFixed(2);gstTotal=+gstTotal.toFixed(2);
+  const sumEl=document.getElementById('inv-summary');
+  if(!items.length){sumEl.classList.add('hidden');return;}
+  sumEl.classList.remove('hidden');
+  document.getElementById('s-subtotal').textContent=fmt(sub);
+  document.getElementById('s-total').textContent=fmt(sub+gstTotal);
+  const intra=txn==='intra';
+  document.getElementById('s-cgst-row').classList.toggle('hidden',!intra);
+  document.getElementById('s-sgst-row').classList.toggle('hidden',!intra);
+  document.getElementById('s-igst-row').classList.toggle('hidden',intra);
+  if(intra){const h=+(gstTotal/2).toFixed(2);document.getElementById('s-cgst').textContent=fmt(h);document.getElementById('s-sgst').textContent=fmt(h);}
+  else{document.getElementById('s-igst').textContent=fmt(gstTotal);}
+}
+function previewInvoice(){
+  const items=getItems();
+  const txn=document.getElementById('inv-txn').value;
+  let sub=0,gstTotal=0;
+  items.forEach(it=>{sub+=it.base;gstTotal+=it.gstAmt;});
+  sub=+sub.toFixed(2);gstTotal=+gstTotal.toFixed(2);
+  const bizName=document.getElementById('biz-name').value||'Your Business';
+  const bizGstin=document.getElementById('biz-gstin').value||'';
+  const bizAddr=document.getElementById('biz-addr').value||'';
+  const cliName=document.getElementById('cli-name').value||'Client';
+  const cliGstin=document.getElementById('cli-gstin').value||'';
+  const invNo=document.getElementById('inv-no').value||'INV-001';
+  const rawDate=document.getElementById('inv-date').value;
+  const invDate=rawDate?new Date(rawDate).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}):new Date().toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
+  const intra=txn==='intra';const half=+(gstTotal/2).toFixed(2);
+  const rows=items.map(it=>`<tr><td>${it.desc||'—'}</td><td style="text-align:center">${it.qty}</td><td style="text-align:right">${fmt(it.rate)}</td><td style="text-align:right">${fmt(it.base)}</td><td style="text-align:center">${it.gstRate}%</td><td style="text-align:right">${fmt(it.gstAmt)}</td><td style="text-align:right;font-weight:600">${fmt(it.total)}</td></tr>`).join('');
+  const gstRows=intra?`<div class="inv-tot-row"><span>CGST</span><span>${fmt(half)}</span></div><div class="inv-tot-row"><span>SGST</span><span>${fmt(half)}</span></div>`:`<div class="inv-tot-row"><span>IGST</span><span>${fmt(gstTotal)}</span></div>`;
+  const wrap=document.getElementById('invoice-preview-wrap');
+  wrap.innerHTML=`
+    <div class="inv-head">
+      <div><div class="inv-biz-name">${bizName}</div>${bizGstin?`<div style="font-size:0.8rem;color:var(--muted)">GSTIN: ${bizGstin}</div>`:''} ${bizAddr?`<div style="font-size:0.8rem;color:var(--muted);margin-top:2px">${bizAddr}</div>`:''}</div>
+      <div class="inv-meta"><strong>${invNo}</strong>${invDate}</div>
+    </div>
+    <div class="inv-parties">
+      <div><div class="inv-party-label">Bill to</div><div style="font-weight:600">${cliName}</div>${cliGstin?`<div style="font-size:0.8rem;color:var(--muted)">GSTIN: ${cliGstin}</div>`:''}</div>
+    </div>
+    <table class="inv-table"><thead><tr><th>Description</th><th style="text-align:center">Qty</th><th style="text-align:right">Rate</th><th style="text-align:right">Amount</th><th style="text-align:center">GST%</th><th style="text-align:right">GST</th><th style="text-align:right">Total</th></tr></thead><tbody>${rows}</tbody></table>
+    <div class="inv-totals">
+      <div class="inv-tot-row"><span>Subtotal</span><span>${fmt(sub)}</span></div>
+      ${gstRows}
+      <div class="inv-tot-row final"><span>Total</span><span>${fmt(sub+gstTotal)}</span></div>
+    </div>
+    <div class="inv-footer">Generated with GST Calculator &nbsp;·&nbsp; <a href="https://digitalheroesco.com" target="_blank">Built for Digital Heroes</a> &nbsp;·&nbsp; Katha Pawale &nbsp;·&nbsp; kathapawale321@gmail.com</div>`;
+  wrap.classList.remove('hidden');
+  wrap.scrollIntoView({behavior:'smooth',block:'start'});
+}
+function printInvoice(){previewInvoice();setTimeout(()=>window.print(),400);}
+function switchTab(tab,btn){
+  document.querySelectorAll('.tab-section').forEach(el=>el.classList.remove('active'));
+  document.querySelectorAll('.tabs button').forEach(el=>el.classList.remove('active'));
+  document.getElementById('tab-'+tab).classList.add('active');
+  btn.classList.add('active');
+}
+document.getElementById('inv-date').valueAsDate=new Date();
+addItem();addItem();
+</script>
+</body>
+</html>
